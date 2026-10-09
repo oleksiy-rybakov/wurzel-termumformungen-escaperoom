@@ -163,7 +163,7 @@ const GAME = {
       tasks:[
         {id:'F1',label:'Dreieck',level:2,symbolic:'√(△² − 2 · △ · ◇ + ◇²)',given:'sqrt(6^2-2*6*4+4^2)',prompt:'Verwendet △ und ◇ aus eurem Inventar. Nutzt das binomische Quadrat und berechnet das Ergebnis. Es liefert die Signalziffer des Dreiecks.',answer:'2',mode:'root',hints:['Im Inventar stehen △ = 6 und ◇ = 4.','Der Radikand ist (6 − 4)².'],steps:['sqrt((6-4)^2)','abs(6-4)','2']},
         {id:'F2',label:'Kreis',level:2,symbolic:'○ / (√3 − 1)',given:'2/(sqrt(3)-1)',prompt:'Setzt den Wert von ○ ein, macht den Nenner rational und vereinfacht vollständig. Der rationale Summand eures Ergebnisses liefert die Signalziffer des Kreises.',answer:'sqrt(3)+1',mode:'rationalize',hints:['Im Inventar steht ○ = 2. Erweitere mit √3 + 1.','Im Nenner entsteht 3 − 1 = 2.'],steps:['2*(sqrt(3)+1)/(3-1)','sqrt(3)+1']},
-        {id:'F3',label:'Raute',level:1,symbolic:'◇ / √2',given:'4/sqrt(2)',prompt:'Setzt den Wert von ◇ ein. Macht den Nenner rational und vereinfacht. Die Zahl vor √2 liefert die Signalziffer der Raute.',answer:'2*sqrt(2)',mode:'rationalize',hints:['Im Inventar steht ◇ = 4. Erweitere mit √2.','Du erhältst 4√2 / 2.'],steps:['4*sqrt(2)/2','2*sqrt(2)']}
+        {id:'F3',label:'Raute',level:2,symbolic:'(◇ + ○) / √2 − √2',given:'(4+2)/sqrt(2)-sqrt(2)',prompt:'Setzt die Werte von ◇ und ○ ein. Macht den Nenner rational und fasst anschließend die gleichartigen Wurzelterme zusammen. Die Zahl vor √2 im vollständig vereinfachten Ergebnis liefert die Signalziffer der Raute.',answer:'2*sqrt(2)',mode:'rationalize',singleTerm:true,hints:['Im Inventar stehen ◇ = 4 und ○ = 2. Erweitere den Bruch mit √2. Die anschließende Subtraktion bleibt zunächst stehen.','Du erhältst 6√2 / 2 − √2. Kürze zuerst den Bruch und fasse dann die gleichartigen Wurzelterme zusammen.'],steps:['6/sqrt(2)-sqrt(2)','6*sqrt(2)/2-sqrt(2)','3*sqrt(2)-sqrt(2)','2*sqrt(2)']}
       ]}
   ],
   items:{lamp:{symbol:'☼',name:'UV-Lampe',text:'Aus dem Werkzeugfach. Macht die Messpunkte im Resonanzraum sichtbar.'},diamond:{symbol:'◇',name:'Prismenplättchen',text:'Eingravierter Wert: ◇ = 4.'},circle:{symbol:'○',name:'Spiegelplättchen',text:'Eingravierter Wert: ○ = 2.'},triangle:{symbol:'△',name:'Resonanzplättchen',text:'Eingravierter Wert: △ = 6.'},route:{symbol:'↗',name:'Routenkarte',text:'Ausgangssignale in dieser Reihenfolge: RAUTE → DREIECK → KREIS.'}},
@@ -205,6 +205,10 @@ const EscapeCore = (() => {
     if(t.errorLine&&Number(line)!==t.errorLine)return{ok:false,msg:'Prüft zuerst die markierte Fehlerzeile: Gesucht ist der erste Schritt, der den Wert verändert.'};
     const result=MathCheck.check(raw,t);if(!result.ok)return result;
     if(!MathCheck.rootsSimplified(raw))return{ok:false,msg:'Dein Term ist gleichwertig. Vereinfache die Wurzel aber noch: Ziehe vorhandene Quadratfaktoren heraus und rechne Wurzeln aus Quadratzahlen aus.'};
+    if(t.singleTerm){
+      const hasSum=n=>!!n&&(['+','-'].includes(n.op)||hasSum(n.a)||hasSum(n.b));
+      if(hasSum(result.ast))return{ok:false,msg:'Dein Term ist gleichwertig. Fasse die gleichartigen Wurzelterme noch zusammen und rechne die Zahlen aus. Im Ergebnis soll nur ein Zahlenfaktor vor √2 stehen.'};
+    }
     return{ok:true};
   }
   function checkLock(s,id,value){
